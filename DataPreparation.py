@@ -56,4 +56,7 @@ true_fake.sample(frac=1)
 
 # Save the cleaned and ready-to-use dataset to a new CSV
 true_fake = pd.DataFrame(true_fake) 
-true_fake.to_csv(r'C:\Users\Benson\Documents\New FakeNewsDetection\DetectFakeNews\datasets\true_fake_data.csv', index=False) 
+# --To-Do
+# Some code to save my dataset to Google Drive. Do you know how? Kindly help
+
+# true_fake.to_csv(../\datasets\true_fake_data.csv', index=False) 

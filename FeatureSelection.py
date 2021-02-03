@@ -9,6 +9,7 @@ from gensim.parsing.preprocessing import STOPWORDS
 
 stop_words = stopwords.words('english')
 stop_words.extend(['from', 'subject', 're', 'edu', 'use'])
+
 def preprocess(text):
     result = []
     for token in gensim.utils.simple_preprocess(text):

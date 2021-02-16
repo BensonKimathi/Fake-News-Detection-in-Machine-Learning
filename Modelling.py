@@ -1,53 +1,74 @@
 import FeatureSelection
+import DataPreparation
 
-import joblib,os
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import joblib
+import pickle
+import matplotlib.pyplot as plt
+
+import re
+import string
+import nltk
+nltk.download('stopwords')
+from nltk.corpus import stopwords
+stop = stopwords.words('english')
+
+from sklearn.pipeline import Pipeline
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfTransformer
 
 from sklearn.model_selection import train_test_split
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import classification_report
+
 from sklearn.linear_model import LogisticRegression
-# from sklearn.metrics import roc_auc_score
-# from sklearn.metrics import confusion_matrix
 
-true_fake = FeatureSelection.trueFake
+# Convert Text to Vectors
+x = DataPreparation.df["text"]
+y = DataPreparation.df["target"]
 
-# Using Title for detection
-# X_train, X_test, y_train, y_test = train_test_split(true_fake.clean_joined_title, true_fake.target, test_size = 0.2,random_state=2)
-# vec_train = CountVectorizer().fit(X_train)
-# X_vec_train = vec_train.transform(X_train)
-# X_vec_test = vec_train.transform(X_test)
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.25, random_state=42)
 
-# # Logistic Regression
-# model = LogisticRegression(C=2)
-# model.fit(X_vec_train, y_train)
-# predicted_value = model.predict(X_vec_test)
-# accuracy_value = roc_auc_score(y_test, predicted_value)
-# print(accuracy_value)
+# LOGISTIC REGRESSION
+pipe = Pipeline([('count_vectorization', CountVectorizer()),
+                 ('tfidf_vectorization', TfidfTransformer()),
+                 ('LR', LogisticRegression())])
 
-# USING TEXT FOR DETECTION
-X_train, X_test, y_train, y_test = train_test_split(true_fake.clean_joined_text, true_fake.target, test_size = 0.2,random_state=2)
-vec_train = CountVectorizer().fit(X_train)
-X_vec_train = vec_train.transform(X_train)
-X_vec_test = vec_train.transform(X_test)
+LR = pipe.fit(x_train, y_train)
+pred_lr = LR.predict(x_test)
 
-# Logistic Regression
-model = LogisticRegression(C=2.5)
-model.fit(X_vec_train, y_train)
-# predicted_value = model.predict(X_vec_test)
-# accuracy_value = roc_auc_score(y_test, predicted_value)
-# print(accuracy_value)
-joblib.dump(model, 'logistic_regression.sav')
+LR.score(x_test, y_test)
+print(classification_report(y_test, pred_dt))
+#saving this model to the disk
+model_file = 'models/logistic_regression.sav'
+pickle.dump(LR,open(model_file,'wb'))
 
-# # USING COMBINED TEXT AND TITLE
-# X_train, X_test, y_train, y_test = train_test_split(true_fake.clean_joined_final, true_fake.target, test_size = 0.2,random_state=0)
-# vec_train = CountVectorizer().fit(X_train)
-# X_vec_train = vec_train.transform(X_train)
-# X_vec_test = vec_train.transform(X_test)
+# DECISION TREE
+pipe = Pipeline([('count_vectorization', CountVectorizer()),
+                 ('tfidf_vectorization', TfidfTransformer()),
+                 ('DT', DecisionTreeClassifier())])
 
-# # Logistic Regression
-# model = LogisticRegression(C=3)
-# model.fit(X_vec_train, y_train)
-# predicted_value = model.predict(X_vec_test)
-# accuracy_value = roc_auc_score(y_test, predicted_value)
-# print(accuracy_value)
+DT = pipe.fit(x_train, y_train)
+pred_dt = DT.predict(x_test)
 
-# joblib.dump(model,'Modelling.pkl')
+DT.score(x_test, y_test)
+print(classification_report(y_test, pred_dt))
+#saving this model to the disk
+model_file = 'models/decison_tree.sav'
+pickle.dump(DT,open(model_file,'wb'))
+
+# RANDOM FOREST
+pipe = Pipeline([('count_vectorization', CountVectorizer()),
+                 ('tfidf_vectorization', TfidfTransformer()),
+                 ('RFC', RandomForestClassifier())])
+
+RFC = pipe.fit(x_train, y_train)
+pred_rfc = RFC.predict(x_test)
+
+RFC.score(x_test, y_test)
+print(classification_report(y_test, pred_rfc))
+#saving this model to the disk
+model_file = 'models/random_forest.sav'
+pickle.dump(RFC,open(model_file,'wb'))

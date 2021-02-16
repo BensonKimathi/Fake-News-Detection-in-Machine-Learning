@@ -1,32 +1,28 @@
+# Import Libraries
 import DataPreparation
+import pandas as pd
 
-import nltk
 import re
-from nltk.corpus import stopwords
-import gensim
-from gensim.utils import simple_preprocess
-from gensim.parsing.preprocessing import STOPWORDS
+import string
 
-stop_words = stopwords.words('english')
-stop_words.extend(['from', 'subject', 're', 'edu', 'use'])
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+
+# Load Dataset
+true_fake = pd.read_csv('datasets/true_fake_data.csv')
+
+# Drop null in text column
+true_fake.dropna(subset=['text'],inplace=True)
 
 def preprocess(text):
-    result = []
-    for token in gensim.utils.simple_preprocess(text):
-        if token not in gensim.parsing.preprocessing.STOPWORDS and len(token) > 2 and token not in stop_words:
-            result.append(token)
-            
-    return result
+    text = text.lower()
+    text = re.sub('\[.*?\]', '', text)
+    text = re.sub("\\W"," ",text)
+    text = re.sub('https?://\S+|www\.\S+', '', text)
+    text = re.sub('<.*?>+', '', text)
+    text = re.sub('[%s]' % re.escape(string.punctuation), '', text)
+    text = re.sub('\n', '', text)
+    text = re.sub('\w*\d\w*', '', text)  
+    return text
 
-# Using Title for Prediction
-trueFake = DataPreparation.true_fake
-trueFake['clean_title'] = DataPreparation.true_fake['title'].apply(preprocess)
-trueFake['clean_joined_title']=trueFake['clean_title'].apply(lambda x:" ".join(x))
-
-# Using Text for Prediction
-trueFake['clean_text'] = DataPreparation.true_fake['text'].apply(preprocess)
-trueFake['clean_joined_text']=trueFake['clean_text'].apply(lambda x:" ".join(x))
-
-# Using Joined Title and Text
-trueFake['clean_final'] = DataPreparation.true_fake['combined'].apply(preprocess)
-trueFake['clean_joined_final']=trueFake['clean_final'].apply(lambda x:" ".join(x))
+true_fake["text"] = true_fake["text"].apply(preprocess)
